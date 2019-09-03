@@ -1,0 +1,9 @@
+body {
+    margin: 0;
+}
+
+body video {
+    position: absolute;
+    opacity: 0.5;
+    /* left: 0; */
+}
