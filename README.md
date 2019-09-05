@@ -6,7 +6,7 @@ This repository uses [p5.js](https://p5js.org), [ml5.js](https://ml5js.org), and
 
 1. Clone this repo.
 
-2. Install [Node.js](https://nodejs.org). 
+2. Install [Node.js](https://nodejs.org).
    - On macOS, [install HomeBrew](https://brew.sh), and then enter `brew install node` into a terminal window.
    - On Windows, install it from the [Node.js download page](https://nodejs.org/en/).
 

@@ -2,8 +2,9 @@ body {
     margin: 0;
 }
 
+/* This rule isn't used in the project as distributed, because the JavaScript
+code hides the vido element. */
 body video {
     position: absolute;
     opacity: 0.5;
-    /* left: 0; */
 }
