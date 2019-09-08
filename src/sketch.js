@@ -10,8 +10,9 @@ const height = 480 * scale;
 // See https://github.com/processing/p5.js/wiki/Global-and-instance-mode
 let p5;
 
-// setup initializes this to a p5.js Video instance.
-let video;
+// setup initializes these variables
+let video; // a p5.js Video instance
+let label;
 
 // index.js calls this to set p5 to the current p5 sketch instance, so that
 // setup and draw can access it.
@@ -37,13 +38,18 @@ export function setup() {
 
   // Hide the video element, and just show the canvas
   video.hide();
+
+  // create a new text field, and position it beneath the canvas
+  label = p5.createDiv();
+  label.position(5, height + 50);
+  label.style('font-size', '24pt');
 }
 
 // p5js calls this function once per animation frame. In this program, it
 // does nothing---instead, the call to `poseNet.on` in `setup` (above) specifies
 // a function that is applied to the list of poses whenever PoseNet processes
 // a video frame.
-export function draw() {}
+export function draw() { }
 
 function drawPoses(poses) {
   // Modify the graphics context to flip all remaining drawing horizontally.
@@ -52,6 +58,11 @@ function drawPoses(poses) {
   p5.translate(width, 0); // move the left side of the image to the right
   p5.scale(-1.0, 1.0);
   p5.image(video, 0, 0, video.width, video.height);
+  if (poses.length > 0) {
+    const pose = poses[0].pose;
+    console.log('Score =', pose.score);
+    label.html('Score = ' + pose.score);
+  }
   drawKeypoints(poses);
   drawSkeleton(poses);
 }
