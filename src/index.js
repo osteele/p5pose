@@ -11,4 +11,5 @@ const s2 = (p5s) => {
   p5s.draw = sketch.draw;
 };
 
+// eslint-disable-next-line new-cap
 new p5(s2, 'container');
