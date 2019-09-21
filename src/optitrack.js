@@ -4,21 +4,24 @@
  * to create the skeleton.
  */
 function createJoinPairs() {
+    const left2right = (s) => s.replace(/^L/, 'R');
     const jointPairs = [];
-    // Sequences of joint names. If the sequence contains a pair [jn1, jn2] where
-    // either or both of jn1, jn2 begins with 'L', a pair where initial L has been replaced by R
-    // is also added
+    // Sequences of joint names. If the sequence contains a pair [jn1, jn2]
+    // where either or both of jn1, jn2 begins with 'L', a pair where initial L
+    // has been replaced by R is also added.
     [
         'LToe LFoot LAnkleOut LKneeOut LShin LThigh Hip',
         'LFArm LWristOut LHandOut LWristIn',
         'LHand LWristIn',
     ].forEach((jointChain) => {
         jointChain.split(' ').forEach((jn2, i, jointNames) => {
-            if (i == 0) { return; }
+            if (i == 0) {
+                return;
+            }
             const jn1 = jointNames[i - 1];
             jointPairs.push([jn1, jn2]);
             if (jn1.match(/^L/) || jn2.match(/^L/)) {
-                jointPairs.push([jn1.replace(/^L/, 'R'), jn2.replace(/^L/, 'R')]);
+                jointPairs.push([left2right(jn1), left2right(jn2)]);
             }
         });
     });
@@ -54,7 +57,8 @@ export function poseNet(videoOrOptionsOrCallback, optionsOrCallback, cb) {
 
     ws.onmessage = (event) => {
         const pose = JSON.parse(event.data);
-        // create a dictionary indexed by part name, for constructing the skeleton
+        // create a dictionary indexed by part name, for constructing the
+        // skeleton
         const byPart = {};
         pose.keypoints.forEach((kp) => {
             byPart[kp.part] = kp;
@@ -74,11 +78,15 @@ export function poseNet(videoOrOptionsOrCallback, optionsOrCallback, cb) {
             ).filter((keypoints) => keypoints.every((kp) => kp));
         let poses = [{ pose, skeleton }];
         callbacks.forEach((cb) => {
-            if (p5) { p5.push(); }
+            if (p5) {
+                p5.push();
+            }
             try {
                 cb(poses);
             } finally {
-                if (p5) { p5.pop(); }
+                if (p5) {
+                    p5.pop();
+                }
             }
         });
     };
@@ -100,9 +108,9 @@ export function poseNet(videoOrOptionsOrCallback, optionsOrCallback, cb) {
     return {
         on: (eventType, cb) => {
             if (eventType != 'pose') {
-                throw new Exception(`Unknown listener: ${eventType}`)
+                throw new Exception(`Unknown listener: ${eventType}`);
             }
-            callbacks.push(cb)
+            callbacks.push(cb);
         },
     };
 }
