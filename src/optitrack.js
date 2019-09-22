@@ -3,7 +3,7 @@
 /* Create a list [[jn1, jn2]] of joint-name pairs, for joints that are connected
  * to create the skeleton.
  */
-function createJoinPairs() {
+function createJointPairs() {
     const left2right = (s) => s.replace(/^L/, 'R');
     const jointPairs = [];
     // Sequences of joint names. If the sequence contains a pair [jn1, jn2]
@@ -11,6 +11,9 @@ function createJoinPairs() {
     // has been replaced by R is also added.
     [
         'LToe LFoot LAnkleOut LKneeOut LShin LThigh Hip',
+        'LFoot LShin',
+        'Hip Chest Neck LFArm LHand',
+        'Neck Head',
         'LFArm LWristOut LHandOut LWristIn',
         'LHand LWristIn',
     ].forEach((jointChain) => {
@@ -28,7 +31,7 @@ function createJoinPairs() {
     return jointPairs;
 }
 
-const jointNamePairs = createJoinPairs();
+const jointNamePairs = createJointPairs();
 
 /**  An API to the OptiTrack data client.
  *
@@ -43,26 +46,22 @@ export function poseNet(videoOrOptionsOrCallback, optionsOrCallback, cb) {
     if (typeof options === 'function') {
         return poseNet(video, {}, optionsOrCallback);
     }
-    const { p5, speed, serverUrl } = optionsOrCallback;
+    const { p5, frameRate, serverUrl } = optionsOrCallback;
     let video = videoOrOptionsOrCallback || { width: 1, height: 1 };
     const width = video.width;
     const height = video.height;
     const ws = new WebSocket(serverUrl || 'ws://localhost:8765');
     let onLoad = cb;
-    const callbacks = [];
+    const onPoseCallbacks = [];
 
     const startTime = new Date();
-    let cursor = 0;
+    let frameNumber = 0;
 
 
     ws.onmessage = (event) => {
-        const pose = JSON.parse(event.data);
-        // create a dictionary indexed by part name, for constructing the
-        // skeleton
-        const byPart = {};
-        pose.keypoints.forEach((kp) => {
-            byPart[kp.part] = kp;
-        });
+        const data = JSON.parse(event.data);
+        const { pose } = data;
+        // Convert the 3D points into 2D
         pose.keypoints.forEach((kp) => {
             const pos = kp.position;
             kp.pos = pos; // this is original 3D position
@@ -72,12 +71,24 @@ export function poseNet(videoOrOptionsOrCallback, optionsOrCallback, cb) {
                 y: (1 - pos.z) * height / 2,
             };
         });
+
+        // create a dictionary indexed by part name, for constructing the
+        // skeleton
+        const keypointsByPartName = {};
+        pose.keypoints.forEach((kp) => {
+            keypointsByPartName[kp.part] = kp;
+        });
         const skeleton =
             jointNamePairs.map((names) =>
-                names.map((name) => byPart[name])
+                names.map((name) => keypointsByPartName[name])
             ).filter((keypoints) => keypoints.every((kp) => kp));
-        let poses = [{ pose, skeleton }];
-        callbacks.forEach((cb) => {
+
+        // Create an array of poses, that emulates the PoseNet structure.
+        let frameCount = data.frame_count;
+        let poses = [{ frameCount, frameNumber: data.frame_number, pose, skeleton }];
+
+        // apply the on('pose') callbacks
+        onPoseCallbacks.forEach((cb) => {
             if (p5) {
                 p5.push();
             }
@@ -98,8 +109,8 @@ export function poseNet(videoOrOptionsOrCallback, optionsOrCallback, cb) {
                 onLoad();
                 onLoad = null;
             }
-            ws.send(JSON.stringify({ elapsed, cursor }));
-            cursor += speed || 1;
+            ws.send(JSON.stringify({ elapsed, frame_no: frameNumber }));
+            frameNumber += frameRate || 1;
         }
         requestAnimationFrame(requestData);
     }
@@ -110,7 +121,7 @@ export function poseNet(videoOrOptionsOrCallback, optionsOrCallback, cb) {
             if (eventType != 'pose') {
                 throw new Exception(`Unknown listener: ${eventType}`);
             }
-            callbacks.push(cb);
+            onPoseCallbacks.push(cb);
         },
     };
 }

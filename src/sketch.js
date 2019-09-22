@@ -5,6 +5,7 @@ const scale = 1; // scale the video image
 // video image dimensions
 const width = 640 * scale;
 const height = 480 * scale;
+let slider;
 
 // setSketch (below) sets this to a p5 instance.
 // In this file, the p5.js API functions are accessible as methods of this
@@ -55,6 +56,13 @@ export function setup() {
 export function draw() { }
 
 function drawPoses(poses) {
+  if (poses[0] && poses[0].frameCount) {
+    if (!slider) {
+      slider = p5.createSlider(0, poses[0].frameCount - 1);
+      slider.position(10, height + 20);
+    }
+    slider.value(poses[0].frameNumber);
+  }
   // Modify the graphics context to flip all remaining drawing horizontally.
   // This makes the image act like a mirror (reversing left and right); this
   // is easier to work with.
@@ -71,9 +79,11 @@ function drawKeypoints(poses) {
   poses.forEach((pose) =>
     pose.pose.keypoints.forEach((keypoint) => {
       if (keypoint.score > 0.2) {
+        const { x, y } = keypoint.position;
         p5.fill(0, 255, 0);
         p5.noStroke();
-        p5.ellipse(keypoint.position.x, keypoint.position.y, 10, 10);
+        // p5.ellipse(x, y, 10, 10);
+        p5.text(keypoint.part, x, y);
       }
     })
   );
