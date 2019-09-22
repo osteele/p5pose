@@ -43,7 +43,7 @@ export function setup() {
 // does nothing---instead, the call to `poseNet.on` in `setup` (above) specifies
 // a function that is applied to the list of poses whenever PoseNet processes
 // a video frame.
-export function draw() {}
+export function draw() { }
 
 function drawPoses(poses) {
   // Modify the graphics context to flip all remaining drawing horizontally.
@@ -79,4 +79,23 @@ function drawSkeleton(poses) {
       p5.line(p1.position.x, p1.position.y, p2.position.x, p2.position.y);
     });
   });
+}
+
+// Define a function that is when the user presses a key. The `event` argument
+// has properties, including `event.key`, that tell which key is pressed.
+//
+// See https://p5js.org/reference/#/p5/keyPressed
+export function keyPressed(event) {
+  console.log('keyPressed', event.key);
+  if (event.key === 'LeftArrow') {
+    console.log('  (left arrow)');
+  }
+  return false;
+}
+
+// Define a function that is when the user clicks the mouse (or trackpad). The
+// `event` argument Similar functions can be defined to tell when the mouse is
+// released, or dragged.
+export function mouseClicked(event) {
+  console.log('mouseClicked', event.clientX, event.clientY);
 }

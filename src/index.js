@@ -7,8 +7,9 @@ if (module.hot) {
 
 const s2 = (p5s) => {
   sketch.setSketch(p5s);
-  p5s.setup = sketch.setup;
-  p5s.draw = sketch.draw;
+  Object.keys(sketch).forEach((k) => {
+    p5s[k] = sketch[k];
+  });
 };
 
 // eslint-disable-next-line new-cap
