@@ -12,12 +12,6 @@
     "start": "npx live-server src"
   },
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-plugin-transform-runtime": "~6.23.0",
-    "babel-polyfill": "~6.26.0",
-    "babel-preset-env": "~1.6.1",
-    "babel-preset-es2017": "^6.24.1",
-    "clang-format": "~1.2.2",
     "eslint": "^4.19.1",
     "eslint-config-google": "^0.9.1",
     "live-server": "^1.2.1"
