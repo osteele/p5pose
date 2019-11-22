@@ -1,36 +1,36 @@
 // setup initializes this to a p5.js Video instance.
 let video;
 
-// p5js calls this code once when the page is loaded (and, during
-// development, when the code is modified.)
+// p5js calls this code once when the page is loaded (and, during development,
+// when the code is modified.)
 export function setup() {
   createCanvas(640, 480);
   video = select('video') || createCapture(VIDEO);
   video.size(width, height);
 
-  // Create a new poseNet method with single-pose detection.
-  // The second argument is a function that is called when the model is
-  // loaded. It hides the HTML element that displays the "Loading model…" text.
+  // Create a new poseNet method with single-pose detection. The second argument
+  // is a function that is called when the model is loaded. It hides the HTML
+  // element that displays the "Loading model…" text.
   const poseNet = ml5.poseNet(video, () => select('#status').hide());
 
-  // Every time we get a new pose, apply the function `drawPoses` to it
-  // (call `drawPoses(poses)`) to draw it.
+  // Every time we get a new pose, apply the function `drawPoses` to it (call
+  // `drawPoses(poses)`) to draw it.
   poseNet.on('pose', drawPoses);
 
   // Hide the video element, and just show the canvas
   video.hide();
 }
 
-// p5js calls this function once per animation frame. In this program, it
-// does nothing---instead, the call to `poseNet.on` in `setup` (above) specifies
-// a function that is applied to the list of poses whenever PoseNet processes
-// a video frame.
+// p5js calls this function once per animation frame. In this program, it does
+// nothing---instead, the call to `poseNet.on` in `setup` (above) specifies a
+// function that is applied to the list of poses whenever PoseNet processes a
+// video frame.
 export function draw() { }
 
 function drawPoses(poses) {
   // Modify the graphics context to flip all remaining drawing horizontally.
-  // This makes the image act like a mirror (reversing left and right); this
-  // is easier to work with.
+  // This makes the image act like a mirror (reversing left and right); this is
+  // easier to work with.
   translate(width, 0); // move the left side of the image to the right
   scale(-1.0, 1.0);
   image(video, 0, 0, video.width, video.height);
