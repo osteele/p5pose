@@ -1,24 +1,26 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>P5.js + PoseNet Demo</title>
 
-    <link href="./style.css" rel="stylesheet" type="text/css" />
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>P5.js + PoseNet Demo</title>
 
-    <script src="https://unpkg.com/p5@0.10.2/lib/p5.min.js"></script>
-    <script src="https://unpkg.com/p5@0.10.2/lib/addons/p5.sound.min.js"></script>
-    <script src="https://unpkg.com/ml5@0.4.1/dist/ml5.min.js"></script>
-  </head>
+  <link href="./style.css" rel="stylesheet" type="text/css" />
 
-  <body>
-    <div id="container"></div>
-    <p id="status">Loading model…</p>
-  </body>
+  <script src="https://unpkg.com/p5@0.10.2/lib/p5.min.js"></script>
+  <script src="https://unpkg.com/ml5@0.4.1/dist/ml5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stats.js@0.17.0/build/stats.min.js"></script>
+</head>
 
-  <script type="module">
-    import * as sketch from "./sketch.js";
-    Object.keys(sketch).forEach(name => (window[name] = sketch[name]));
-  </script>
+<body>
+  <div id="container"></div>
+  <p id="status">Loading model…</p>
+</body>
+
+<script type="module">
+  import * as sketch from "./sketch.js";
+  Object.keys(sketch).forEach(name => (window[name] = sketch[name]));
+</script>
+
 </html>

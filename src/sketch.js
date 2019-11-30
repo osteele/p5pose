@@ -1,5 +1,7 @@
-// setup initializes this to a p5.js Video instance.
-let video;
+const stats = new Stats();
+
+let video; // setup initializes this to a p5.js Video instance.
+let poses = null;
 
 // p5js calls this code once when the page is loaded (and, during development,
 // when the code is modified.)
@@ -8,6 +10,9 @@ export function setup() {
   video = select("video") || createCapture(VIDEO);
   video.size(width, height);
 
+  stats.showPanel(0);
+  document.body.appendChild(stats.dom);
+
   // Create a new poseNet method with single-pose detection. The second argument
   // is a function that is called when the model is loaded. It hides the HTML
   // element that displays the "Loading model…" text.
@@ -15,7 +20,7 @@ export function setup() {
 
   // Every time we get a new pose, apply the function `drawPoses` to it (call
   // `drawPoses(poses)`) to draw it.
-  poseNet.on("pose", drawPoses);
+  poseNet.on("pose", data => poses = data);
 
   // Hide the video element, and just show the canvas
   video.hide();
@@ -25,15 +30,21 @@ export function setup() {
 // nothing---instead, the call to `poseNet.on` in `setup` (above) specifies a
 // function that is applied to the list of poses whenever PoseNet processes a
 // video frame.
-export function draw() {}
-
-function drawPoses(poses) {
+export function draw() {
+  stats.begin();
   // Modify the graphics context to flip all remaining drawing horizontally.
   // This makes the image act like a mirror (reversing left and right); this is
   // easier to work with.
   translate(width, 0); // move the left side of the image to the right
   scale(-1.0, 1.0);
   image(video, 0, 0, video.width, video.height);
+  if (poses) {
+    drawPoses(poses);
+  }
+  stats.end();
+}
+
+function drawPoses(poses) {
   drawKeypoints(poses);
   drawSkeleton(poses);
 }
