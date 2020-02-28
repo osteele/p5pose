@@ -5,8 +5,15 @@ let video;
 // when the code is modified.)
 export function setup() {
   createCanvas(640, 480);
-  video = select("video") || createCapture(VIDEO);
+  video = createVideo('contemporary-dance-class.mp4');
   video.size(width, height);
+
+  let button = createButton('Click to play');
+  button.mousePressed(() => {
+    console.info('clicked');
+    video.play();
+    button.hide();
+  })
 
   // Create a new poseNet method with single-pose detection. The second argument
   // is a function that is called when the model is loaded. It hides the HTML
@@ -20,6 +27,9 @@ export function setup() {
   // Hide the video element, and just show the canvas
   video.hide();
 }
+
+export function mouseClicked() {}
+
 
 // p5js calls this function once per animation frame. In this program, it does
 // nothing---instead, the call to `poseNet.on` in `setup` (above) specifies a
