@@ -6,19 +6,25 @@ export function setup() {
   video = select("video") || createCapture(VIDEO);
   video.size(width, height);
 
-  const poseNet = ml5.poseNet(video, () => { select("#status").hide() });
+  const poseNet = ml5.poseNet(video, { flipHorizontal: true }, () => {
+    select("#status").hide();
+  });
 
-  poseNet.on("pose", newPoses => { poses = newPoses });
+  poseNet.on("pose", (newPoses) => {
+    poses = newPoses;
+  });
 
   // Hide the video element, and just show the canvas
   video.hide();
 }
 
 export function draw() {
-  translate(width, 0);
-  scale(-1.0, 1.0);
+  push();
+  translate(video.width, 0);
+  scale(-1, 1);
+  image(video, 0, 0);
+  pop();
 
-  image(video, 0, 0, video.width, video.height);
   drawKeypoints(poses);
   drawSkeleton(poses);
 }
