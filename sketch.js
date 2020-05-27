@@ -1,7 +1,7 @@
 let video; // setup initializes this to a p5.js Video instance.
 let poses = []; // the poseNet.on callback sets this from new poses
 
-export function setup() {
+function setup() {
   createCanvas(640, 480);
   video = select("video") || createCapture(VIDEO);
   video.size(width, height);
@@ -18,7 +18,7 @@ export function setup() {
   video.hide();
 }
 
-export function draw() {
+function draw() {
   push();
   translate(video.width, 0);
   scale(-1, 1);
