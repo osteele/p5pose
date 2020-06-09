@@ -2,7 +2,9 @@ let video; // setup initializes this to a p5.js Video instance.
 let poses = []; // the poseNet.on callback sets this from new poses
 
 export function setup() {
-  createCanvas(640, 480);
+  createCanvas(640, 480, WEBGL);
+  normalMaterial();
+
   video = select("video") || createCapture(VIDEO);
   video.size(width, height);
 
@@ -19,11 +21,16 @@ export function setup() {
 }
 
 export function draw() {
+  clear();
+
   push();
   translate(video.width, 0);
   scale(-1, 1);
-  image(video, 0, 0);
+  image(video, width / 2, -height / 2);
   pop();
+  return;
+  translate(-width / 2, -height / 2, 0);
+  orbitControl();
 
   drawKeypoints(poses);
   drawSkeleton(poses);
@@ -35,7 +42,11 @@ function drawKeypoints(poses) {
       if (keypoint.score > 0.2) {
         fill(0, 255, 0);
         noStroke();
-        ellipse(keypoint.position.x, keypoint.position.y, 10, 10);
+
+        push();
+        translate(keypoint.position.x, keypoint.position.y, 0);
+        sphere(10);
+        pop();
       }
     }
   }
