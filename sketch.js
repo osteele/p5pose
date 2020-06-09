@@ -19,9 +19,10 @@ function setup() {
   poseNet.on("pose", (poses) => {
     if (poses.length > 0) {
       let pose = poses[0];
-      updateBoneLengths(pose);
+      updateBoneLengths(maxBoneLengths, pose);
       normalizePose(pose);
       add3d(pose);
+      adjustBoneLengths(pose, maxBoneLengths);
       lastPose = pose;
     }
   });
@@ -60,15 +61,15 @@ function draw() {
 
 function drawKeypoints(pose) {
   fill("blue");
-  // console.log(pose);
   noStroke();
 
-  for (let keypoint of pose.pose.keypoints) {
-    if (keypoint.score >= minScore) {
+  for (let kp of pose.pose.keypoints) {
+    if (kp.score >= minScore) {
+      let { x, y, z } = kp.pos3;
       push();
-      translate(keypoint.pos3.x, keypoint.pos3.y, 0);
-      rotateX(PI);
-      cone(20, 10);
+      translate(x, y, z);
+      rotateX(PI / 2);
+      cone(10, 20);
       pop();
     }
   }
@@ -82,18 +83,18 @@ function drawSkeleton(pose) {
   }
 }
 
-function updateBoneLengths(pose) {
+// Update maxBoneLengths with the maximum observed 2D bone length
+function updateBoneLengths(maxBoneLengths, pose) {
   for (let skeleton of pose.skeleton) {
-    const [p1, p2] = skeleton;
-    if (p1.score < minScore || p2.score < minScore) continue;
-    let boneName = `${p1.part}-${p2.part}`;
-    let lastLength = maxBoneLengths[boneName] || 0;
-    let length = createVector(p1.position.x, p1.position.y).dist(
-      createVector(p2.position.x, p2.position.y)
+    const [k1, k2] = skeleton;
+    if (min(k1.score, k2.score) < minScore) continue;
+    let boneName = `${k1.part}-${k2.part}`;
+    let boneLen = maxBoneLengths[boneName] || 0;
+    let newLen = createVector(k1.position.x, k1.position.y).dist(
+      createVector(k2.position.x, k2.position.y)
     );
-    if (length > lastLength) {
-      // console.log("new length", boneName, length);
-      maxBoneLengths[boneName] = length;
+    if (newLen > boneLen) {
+      maxBoneLengths[boneName] = newLen;
     }
   }
 }
@@ -110,22 +111,40 @@ function normalizePose(pose) {
   }
 }
 
+let partZ = {
+  shoulder: 1,
+  elbow: 2,
+  wrist: 3,
+  hip: 1,
+  knee: 2,
+  ankle: 3,
+  nose: 20,
+  ear: -10,
+};
+partZ.leftHip = -partZ.hip;
+partZ.leftShoulder = -partZ.shoulder;
+
 // Add p5.Vector `pos3` property
 function add3d(pose) {
-  let partZ = {
-    shoulder: 1,
-    elbow: 2,
-    wrist: 3,
-    hip: 1,
-    knee: 2,
-    ankle: 3,
-  };
-  partZ.leftHip = -partZ.hip;
-  partZ.leftShoulder = -partZ.shoulder;
   for (let kp of pose.pose.keypoints) {
     let { x, y } = kp.position;
     let partKey = kp.part.replace(/^(left|right)/, "").toLowerCase();
     let z = partZ[kp.part] || partZ[partKey] || 0;
-    kp.pos3 = createVector(x, y, z * 100);
+    kp.pos3 = createVector(x, y, z);
+  }
+}
+
+function adjustBoneLengths(pose, boneLengths) {
+  for (let skel of pose.skeleton) {
+    let [k1, k2] = skel;
+    let [{ pos3: p1 }, { pos3: p2 }] = skel;
+    let boneName = `${k1.part}-${k2.part}`;
+    let boneLen = boneLengths[boneName];
+    let curLen = p1.dist(p2);
+    if (min(k1.score, k2.score) >= minScore && curLen < boneLen) {
+      let zAdjust = (boneLen - curLen) / 2;
+      p1.z -= zAdjust;
+      p2.z += zAdjust;
+    }
   }
 }
