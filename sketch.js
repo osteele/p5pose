@@ -1,7 +1,7 @@
 let video; // setup initializes this to a p5.js Video instance.
+let minScore = 0.2;
 let lastPose = null; // the poseNet.on callback sets this from new poses
 let maxBoneLengths = {};
-let skelPositions = {};
 
 function setup() {
   createCanvas(640, 480, WEBGL);
@@ -18,8 +18,11 @@ function setup() {
 
   poseNet.on("pose", (poses) => {
     if (poses.length > 0) {
-      lastPose = poses[0];
-      updateBoneLengths(lastPose);
+      let pose = poses[0];
+      updateBoneLengths(pose);
+      normalizePose(pose);
+      add3d(pose);
+      lastPose = pose;
     }
   });
 
@@ -54,7 +57,7 @@ function draw() {
   // these affect the debugMode grid
   stroke(0, 0, 0, 0.15); // FIXME: opacity is ignored
 }
-let minScore = 0.2;
+
 function drawKeypoints(pose) {
   fill("blue");
   // console.log(pose);
@@ -63,7 +66,7 @@ function drawKeypoints(pose) {
   for (let keypoint of pose.pose.keypoints) {
     if (keypoint.score >= minScore) {
       push();
-      translate(keypoint.position.x, keypoint.position.y, 0);
+      translate(keypoint.pos3.x, keypoint.pos3.y, 0);
       rotateX(PI);
       cone(20, 10);
       pop();
@@ -74,7 +77,7 @@ function drawKeypoints(pose) {
 function drawSkeleton(pose) {
   stroke(255, 0, 0);
   for (let skeleton of pose.skeleton) {
-    const [{ position: p1 }, { position: p2 }] = skeleton;
+    const [{ pos3: p1 }, { pos3: p2 }] = skeleton;
     line(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
   }
 }
@@ -92,5 +95,37 @@ function updateBoneLengths(pose) {
       // console.log("new length", boneName, length);
       maxBoneLengths[boneName] = length;
     }
+  }
+}
+
+// Change pose.pose[n], pose.pose[partName], and pose.skeleton[i][j] to all
+// refer to the same objects
+function normalizePose(pose) {
+  for (let kp of pose.pose.keypoints) {
+    pose.pose[kp.part] = kp;
+  }
+  for (let sk of pose.skeleton) {
+    sk[0] = pose.pose[sk[0].part];
+    sk[1] = pose.pose[sk[1].part];
+  }
+}
+
+// Add p5.Vector `pos3` property
+function add3d(pose) {
+  let partZ = {
+    shoulder: 1,
+    elbow: 2,
+    wrist: 3,
+    hip: 1,
+    knee: 2,
+    ankle: 3,
+  };
+  partZ.leftHip = -partZ.hip;
+  partZ.leftShoulder = -partZ.shoulder;
+  for (let kp of pose.pose.keypoints) {
+    let { x, y } = kp.position;
+    let partKey = kp.part.replace(/^(left|right)/, "").toLowerCase();
+    let z = partZ[kp.part] || partZ[partKey] || 0;
+    kp.pos3 = createVector(x, y, z * 100);
   }
 }
